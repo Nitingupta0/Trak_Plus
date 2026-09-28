@@ -1,0 +1,9 @@
+# False positives - GitHub secret references and test curl commands
+# These are not actual secrets, they are references to GitHub secrets or test commands
+
+# JWT_SECRET_KEY references (GitHub secret, not actual value)
+87493ada1f06c28762933d23a7434e01a7ad9ad5:.github/workflows/ci.yml:generic-api-key:163
+ba7ee6294d7cb41b52f5ff32150559091c8cf9de:.github/workflows/backend.yml:generic-api-key:38
+
+# curl Authorization header with variable (test command, not actual secret)
+ba7ee6294d7cb41b52f5ff32150559091c8cf9de:.github/workflows/e2e.yml:curl-auth-header:160

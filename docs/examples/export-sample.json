@@ -1,0 +1,64 @@
+{
+  "history": [
+    {
+      "watched_at": "2026-08-31T00:00:00+00:00",
+      "action": "watch",
+      "type": "show",
+      "movie": null,
+      "show": {
+        "title": "NARUTO",
+        "year": 2002,
+        "ids": {
+          "tmdb": null,
+          "imdb": null,
+          "tvdb": null,
+          "anilist": "20",
+          "mal": 20,
+          "mangadex": null,
+          "rawg": null
+        }
+      }
+    }
+  ],
+  "ratings": [
+    {
+      "rated_at": "2026-08-31T00:00:00+00:00",
+      "rating": 9,
+      "type": "movie",
+      "movie": {
+        "title": "Inception",
+        "year": 2010,
+        "ids": {
+          "tmdb": "27205",
+          "imdb": null,
+          "tvdb": null,
+          "anilist": null,
+          "mal": null,
+          "mangadex": null,
+          "rawg": null
+        }
+      },
+      "show": null
+    }
+  ],
+  "watchlist": [
+    {
+      "listed_at": "2026-08-31T00:00:00+00:00",
+      "type": "movie",
+      "movie": {
+        "title": "Dune: Part Two",
+        "year": 2024,
+        "ids": {
+          "tmdb": "693134",
+          "imdb": null,
+          "tvdb": null,
+          "anilist": null,
+          "mal": null,
+          "mangadex": null,
+          "rawg": null
+        }
+      },
+      "show": null
+    }
+  ]
+}

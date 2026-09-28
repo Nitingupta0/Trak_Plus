@@ -1,0 +1,6 @@
+# Copy to terraform.tfvars and fill in real values for your local dev.
+# Not committed by design (.gitignore) — see infra/README.md.
+
+aws_region    = "ap-south-1"
+project_name  = "trakplus"
+environment   = "prod"

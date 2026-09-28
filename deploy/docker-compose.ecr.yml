@@ -1,0 +1,22 @@
+# TrakPlus — ECR image override for Lightsail.
+#
+# Overrides the local `build:` directives with pre-built ECR `image:` references.
+# Used by deploy/auto-deploy.sh for automated deployments.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f deploy/docker-compose.lightsail.yml -f deploy/docker-compose.ecr.yml up -d
+#
+# Image URLs are set via environment variables:
+#   ECR_BACKEND_IMAGE  - full URL to backend image (e.g. 123.dkr.ecr.../trakplus-backend:sha)
+#   ECR_FRONTEND_IMAGE - full URL to frontend image
+
+name: trakplus-ecr
+
+services:
+  backend:
+    image: ${ECR_BACKEND_IMAGE:-trakplus-backend:latest}
+    build: !reset null  # Disable local build, use pre-built image
+
+  frontend:
+    image: ${ECR_FRONTEND_IMAGE:-trakplus-frontend:latest}
+    build: !reset null  # Disable local build, use pre-built image

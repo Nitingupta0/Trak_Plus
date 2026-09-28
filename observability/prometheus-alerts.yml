@@ -1,0 +1,29 @@
+groups:
+  - name: trakplus-api
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API 5xx error rate above 5%"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+
+      - alert: PodCrashLooping
+        expr: kube_pod_container_status_restarts_total > 5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod restarting frequently"
+          description: "Container has restarted {{ $value }} times."
+
+      - alert: DatabaseDown
+        expr: up{job="trakplus-backend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend is unreachable (DB/Redis down?)"
+          description: "Prometheus cannot scrape the backend — check pod health and RDS/ElastiCache connectivity."

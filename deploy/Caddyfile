@@ -1,0 +1,39 @@
+# Caddy reverse proxy for TrakPlus on a single Lightsail instance.
+#
+# Site address comes from CADDY_SITE_ADDRESS (deploy/.env.lightsail). If it's
+# a bare IP (e.g. "http://43.204.123.45"), Caddy serves plain HTTP. If it's a
+# domain (e.g. "trak.example.com"), Caddy auto-provisions a Let's Encrypt cert.
+#
+# Routing:
+#   /api/bff/*   -> frontend (Next.js BFF route handlers, same-origin)
+#   /api/auth/*  -> frontend (Next.js auth route handlers, same-origin)
+#   /api/*       -> backend (FastAPI, the public API)
+#   everything   -> frontend (Next.js pages / static assets)
+
+{$CADDY_SITE_ADDRESS} {
+	encode zstd gzip
+
+	# Next.js BFF + auth route handlers must stay on the frontend.
+	handle /api/bff/* {
+		reverse_proxy frontend:3000
+	}
+	handle /api/auth/* {
+		reverse_proxy frontend:3000
+	}
+
+	# Public API -> backend (strip the /api prefix: browser calls /api/search,
+	# FastAPI serves /search).
+	handle_path /api/* {
+		reverse_proxy backend:8000
+	}
+
+	# Liveness endpoint (smoke tests) -> backend.
+	handle /health* {
+		reverse_proxy backend:8000
+	}
+
+	# Everything else -> frontend.
+	handle {
+		reverse_proxy frontend:3000
+	}
+}
