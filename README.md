@@ -43,6 +43,8 @@ Docker Compose (local) ──► Terraform (VPC + EKS + RDS + ElastiCache + ECR)
 CI/CD: GitHub Actions ──► push ECR ──► deploy staging (auto) ──► promote prod (approval gate)
 ```
 
+The diagram above is the **EKS target** (Terraform/Kubernetes portfolio code, not deployed). The **live deployment is simpler**: one Azure VM runs the Docker Compose stack (frontend, backend, Postgres, Redis) behind Caddy, which provides automatic HTTPS — see [Deploy to an Azure VM](#deploy-to-an-azure-vm-live-site).
+
 See [`docs/design.md`](docs/design.md) for the full architecture document.
 
 ## Tech stack
@@ -53,13 +55,13 @@ See [`docs/design.md`](docs/design.md) for the full architecture document.
 | Frontend | Next.js 16 (App Router, TS), Tailwind v4, shadcn/ui (Base UI), TanStack Query |
 | Data | PostgreSQL 17, Redis 7 |
 | External APIs | TMDB, RAWG, AniList (GraphQL), Jikan, MangaDex |
-| Testing | pytest + pytest-asyncio (105 tests), vitest + React Testing Library (12 tests), Playwright (E2E) |
-| Infra | Docker Compose, Terraform (EKS portfolio code; staging destroyed), GitHub Actions (CI + EKS deploy chain) |
+| Testing | pytest + pytest-asyncio (118 tests), vitest + React Testing Library (16 tests), Playwright (E2E) |
+| Infra | Docker Compose + Caddy on an Azure VM (live), Terraform (AWS EKS portfolio code, not deployed), GitHub Actions (CI + optional ECR/EKS deploy chain) |
 
 ## Quickstart (Docker)
 
 ```bash
-git clone <repo-url> && cd trakplus
+git clone https://github.com/Nitingupta0/Trak_Plus.git && cd Trak_Plus
 cp .env.example .env        # optional: add TMDB/RAWG keys (anime + manga work keyless)
 docker compose up --build
 ```
@@ -147,13 +149,30 @@ cd frontend && npm run test:e2e
 
 ## CI/CD
 
-A single consolidated GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push/PR — lint, tests, build, Docker, Terraform validation, security scans (gitleaks, hadolint, npm/pip audits), and a full-stack Playwright E2E. One file = one action in the Actions UI.
+A single consolidated GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push/PR — lint, tests, build, Docker, Terraform validation, security scans (gitleaks, hadolint, npm/pip audits), and a full-stack Playwright E2E. One file = one action in the Actions UI. The ECR-push and EKS-deploy jobs only run on `main`, need AWS credentials (and the `EKS_DEPLOY_ENABLED` repo variable for EKS) and are not used by the Azure deployment, which is updated by hand (see below).
 
-## Deploy to AWS Lightsail (~$12/mo, single box) — auto-deploy
+## Deploy to an Azure VM (live site)
 
-The **live, always-on** deployment runs the same Docker Compose stack on one **Lightsail Small** instance (2 vCPU / 2 GB / 60 GB SSD — $12/mo flat). No EKS, no RDS, no ElastiCache — Postgres and Redis run in Docker on the box. See [`docs/budget.md`](docs/budget.md) for the full cost plan.
+**Live: [trak-plus.lucifer07o.tech](https://trak-plus.lucifer07o.tech)** — the Docker Compose stack on one Ubuntu 24.04 VM (`Standard_B2s`, 2 vCPU / 4 GB, static public IP) behind Caddy with automatic Let's Encrypt HTTPS. Postgres and Redis run in Docker on the VM (no managed database). The VM is **started before demos and deallocated afterwards**, so the site is up on demand rather than always-on, and it is updated by hand — there is no auto-deploy or nightly backup on it.
 
-**Deploys are automatic.** Pushing code to `main` triggers GitHub Actions → tests → push images to **ECR** → Lightsail's `deploy/auto-deploy.sh` (cron, every 5 min) polls ECR, pulls the new images, and restarts the stack. No manual deploy step needed.
+```bash
+# On the VM (Docker + a 2 GB swapfile installed; DNS A record -> the VM's static IP; ports 22/80/443 open)
+git clone https://github.com/Nitingupta0/Trak_Plus.git && cd Trak_Plus
+cp deploy/.env.lightsail.example deploy/.env.lightsail   # CADDY_SITE_ADDRESS=<hostname>, DB password, API keys, CORS_ORIGINS, NEXT_PUBLIC_API_URL=/api, plus JWT_SECRET_KEY
+# deploy/docker-compose.lightsail.yml is written for the original AWS host, so three local edits are needed on a new host:
+sed -Ei 's/[a-z0-9-]+\.[a-z0-9-]+\.me/<your-hostname>/g' deploy/docker-compose.lightsail.yml         # hardcoded hostname (healthcheck + CORS)
+sed -i '/ENVIRONMENT: production/a\      JWT_SECRET_KEY: ${JWT_SECRET_KEY}' deploy/docker-compose.lightsail.yml   # pass the JWT secret to the backend
+sed -i 's/ports: \[\]/ports: !reset []/' deploy/docker-compose.lightsail.yml                          # really drop host port bindings (Compose >= 2.24)
+docker compose -f docker-compose.yml -f deploy/docker-compose.lightsail.yml --env-file deploy/.env.lightsail up -d --build
+```
+
+Update after a code change with `git pull` and the same `up -d --build` command. Stop with `docker compose ... down` (never add `-v`, which deletes the database volume). Deallocate the VM from the Azure portal (status must read *Stopped (deallocated)*) to stop compute billing.
+
+## Alternative: AWS Lightsail (~$12/mo, single box) — auto-deploy
+
+The repo also ships scripts for its original deployment target, the same Compose stack on one **Lightsail Small** instance (2 vCPU / 2 GB / 60 GB SSD — $12/mo flat) — not used for the Azure site above. No EKS, no RDS, no ElastiCache — Postgres and Redis run in Docker on the box. See [`docs/budget.md`](docs/budget.md) for the cost plan.
+
+**Deploys can be automatic.** Pushing code to `main` triggers GitHub Actions → tests → push images to **ECR** → the box's `deploy/auto-deploy.sh` (cron, every 5 min) polls ECR, pulls the new images, and restarts the stack.
 
 ### One-time setup
 ```bash
@@ -165,11 +184,11 @@ cp deploy/.env.lightsail.example deploy/.env.lightsail   # fill in IP/domain + k
 
 # 3. On the Lightsail box (one-time): create ECR repos, configure AWS creds, add cron
 #    ECR_BACKEND_URL / ECR_FRONTEND_URL must be set in deploy/.env.lightsail
-#    Auto-deploy cron (already added on the live box):
+#    Auto-deploy cron:
 #    */5 * * * * /opt/trakplus/deploy/auto-deploy.sh >> /var/log/trakplus-deploy.log 2>&1
 ```
 
-Then browse to `http://<ip>` (or your domain — Caddy auto-provisions TLS). After each push to `main`, the new build lands automatically within ~5 minutes. Tail logs with `docker compose logs -f`. Teardown: `deploy/teardown.sh`. Nightly DB backups: `deploy/backup.sh` (pg_dump → S3) — installed on the live box (02:30 UTC cron), round-trip restore verified. See [`docs/ci-cd.md`](docs/ci-cd.md) for the full ECR→Lightsail pipeline setup.
+Then browse to `http://<ip>` (or your domain — Caddy auto-provisions TLS). Tail logs with `docker compose logs -f`. Teardown: `deploy/teardown.sh`. Nightly DB backups: `deploy/backup.sh` (pg_dump → S3, cron at 02:30 UTC). See [`docs/ci-cd.md`](docs/ci-cd.md) for the full ECR→Lightsail pipeline setup.
 
 The **EKS/Terraform** path (`infra/`, `k8s/`) remains intact as portfolio code — re-applied on demand for demos, then `terraform destroy`-ed.
 
@@ -179,7 +198,7 @@ The **EKS/Terraform** path (`infra/`, `k8s/`) remains intact as portfolio code �
 backend/    FastAPI app — app/{api,core,models,schemas,services}, Alembic migrations, tests/
 frontend/   Next.js 16 — src/app (pages + BFF routes), src/components, e2e/
 infra/      Terraform — modules/{network,eks,rds,elasticache,ecr,iam}, environments/{staging,prod}
-deploy/     Lightsail single-box deploy — Caddy, compose override (base/lightsail/ecr), provision/backup/teardown/auto-deploy scripts
+deploy/     Single-box deploy — Caddy + compose override (base/lightsail/ecr) used on the Azure VM; AWS Lightsail provision/backup/teardown/auto-deploy scripts
 scripts/    Dev utilities (scripts/check_apis.py smoke-tests all 5 external APIs)
 docs/       Product spec, design, plan, todos, progress log, budget, ci-cd, examples/
 .planning/  GSD codebase map (STACK, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, INTEGRATIONS, CONCERNS)
@@ -200,13 +219,13 @@ Build plan and phase-by-phase passing criteria: [`docs/plan.md`](docs/plan.md) �
 - ✅ **Phase 6** — AWS Terraform (6 modules: network, RDS, Redis, ECR, IAM, EKS — code-complete, blocked on AWS)
 - ✅ **Phase 7** — CI/CD to EKS (ECR push + staging deploy + prod approval gate — code-complete, blocked on AWS)
 - ✅ **Phase 8** — Observability (Prometheus metrics, Grafana dashboards, Alertmanager rules, AWS Budgets alarm, k6 load test — code-complete, blocked on AWS)
-- ✅ **Phase 9** — Lightsail single-box deployment (~$12/mo, live at https://trak-plus.lucifer07o.tech; nightly S3 backups wired + round-trip verified)
+- ✅ **Phase 9** — Single-box deployment: AWS Lightsail scripts (~$12/mo option, incl. nightly S3 backup script) and a live Azure VM at https://trak-plus.lucifer07o.tech
 - ✅ **Phase 10** — UI Overhaul (Archive Aesthetic & Dynamic Motion)
 - ✅ **Phase 11** — Feature Enhancements (Schedule, Analysis, Playtime & Progress)
-- ✅ **Phase 12** — Login Redesign, CI/CD Auto-Deploy & Auto-Save
+- ✅ **Phase 12** — Login Redesign, CI/CD Auto-Deploy (Lightsail/ECR path) & Auto-Save
 - ✅ **Graphify** — Knowledge graph installed globally (3 surfaces) + graph built (679 nodes)
 
 ## Notes
 
 - **Data sources**: metadata from [TMDB](https://www.themoviedb.org), [RAWG](https://rawg.io) (attribution required — added in UI footer during Phase 5), [AniList](https://anilist.co), [Jikan](https://jikan.moe), [MangaDex](https://mangadex.org). This product only tracks metadata — no video/streaming playback, no scraping.
-- **Cost control**: live deployment is a single **Lightsail Small** (~$12/mo, see [`docs/budget.md`](docs/budget.md)); the EKS/RDS/ElastiCache Terraform path is kept as portfolio code, `terraform destroy`-ed when not demoing.
+- **Cost control**: the live site runs on a single Azure `Standard_B2s` VM that is deallocated between demos (idle cost is just the disk and static IP); the AWS Lightsail option is ~$12/mo (see [`docs/budget.md`](docs/budget.md)); the EKS/RDS/ElastiCache Terraform path is kept as portfolio code and is not deployed.
