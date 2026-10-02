@@ -18,7 +18,9 @@ Each entry format:
 
 **Done:** Deployed the compose stack to an Azure Ubuntu VM (`Standard_B2s`, static IP, 2 GB swap) behind Caddy at **https://trak-plus.lucifer07o.tech** (Let's Encrypt cert issued, `/health` reports `production`). Documented the full runbook in `docs/azure-deployment.md`. Hardened `deploy/docker-compose.lightsail.yml`: site domain/CORS now come from `deploy/.env.lightsail` (no hardcoded domain; Caddy healthcheck derives the host from `CADDY_SITE_ADDRESS`), `JWT_SECRET_KEY` is passed to the backend and **required** (the backend default is a public dev value), and `ports: !reset []` so base-file host ports really are removed.
 
-**Tests:** `docker compose config` renders correctly with the override and fails fast when `JWT_SECRET_KEY` is missing; on the VM all 5 containers healthy, only 80/443 published, register/login/search (TMDB, RAWG, anime/manga) and add-to-library verified in the browser; site survived a deallocate → start cycle with data and TLS intact.
+**Dependencies:** CI's `pip-audit` started failing on advisories published after the pins were set — bumped `PyJWT` 2.13.0 → 2.15.1 (13 advisories) and `urllib3` 2.7.0 → 2.8.0 (3 advisories). `pip-audit -r backend/requirements.txt --strict` now reports no known vulnerabilities.
+
+**Tests:** `docker compose config` renders correctly with the override and fails fast when `JWT_SECRET_KEY` is missing; on the VM all 5 containers healthy, only 80/443 published, register/login/search (TMDB, RAWG, anime/manga) and add-to-library verified in the browser; ruff clean, 27 DB-free backend tests pass on the bumped pins, and an access/refresh token round trip (wrong-type and tampered tokens rejected) passes on PyJWT 2.15.1; site survived a deallocate → start cycle with data and TLS intact.
 
 **Issues/deviations:** The VM is deallocated between demos, so the site is up on demand only. SSH is open to any IP (strong password + fail2ban) because IP allow-listing broke on campus/ISP networks. Google sign-in left disabled on this deployment (email/password works). Older entries below still reference the original AWS Lightsail host (`trakplus.noblechicken.me`) as historical record.
 
