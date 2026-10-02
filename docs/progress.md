@@ -52,7 +52,7 @@ Each entry format:
 
 ## 2026-09-03 — Deploy UI Enhancements to Lightsail (live)
 
-**Done:** Redeployed the stack to the Lightsail box (`deploy/deploy.sh`, HEAD `0fb112f`) — frontend/backend images rebuilt, Alembic migrations applied (episode descriptions/thumbnails, playtime/duration), all 5 containers healthy. Live site verified: `https://trakplus.noblechicken.me/health` → 200 ok, `/library` 200, `/` → `/login` 200.
+**Done:** Redeployed the stack to the Lightsail box (`deploy/deploy.sh`, HEAD `0fb112f`) — frontend/backend images rebuilt, Alembic migrations applied (episode descriptions/thumbnails, playtime/duration), all 5 containers healthy. Live site verified: `https://trak-plus.lucifer07o.tech/health` → 200 ok, `/library` 200, `/` → `/login` 200.
 
 **Tests:** On-box `docker compose` healthchecks green; external curl of health + pages 200.
 
@@ -235,11 +235,11 @@ Each entry format:
 
 ---
 
-## 2026-09-01 — Custom domain + HTTPS live: trakplus.noblechicken.me
+## 2026-09-01 — Custom domain + HTTPS live: trak-plus.lucifer07o.tech
 
-**Done:** DNS propagated (trakplus.noblechicken.me → 13.234.124.180). Caddy updated to use `CADDY_SITE_ADDRESS=https://trakplus.noblechicken.me` and CORS adjusted. Let's Encrypt cert issued successfully via TLS-ALPN challenge. Verified: HTTPS `/health` → `{"status":"ok"}` · search · frontend. HTTP → HTTPS auto-redirect working. Old IP (13.234.124.180) → 308 redirect to HTTPS domain.
+**Done:** DNS propagated (trak-plus.lucifer07o.tech → 13.234.124.180). Caddy updated to use `CADDY_SITE_ADDRESS=https://trak-plus.lucifer07o.tech` and CORS adjusted. Let's Encrypt cert issued successfully via TLS-ALPN challenge. Verified: HTTPS `/health` → `{"status":"ok"}` · search · frontend. HTTP → HTTPS auto-redirect working. Old IP (13.234.124.180) → 308 redirect to HTTPS domain.
 
-**One manual step remaining:** add `https://trakplus.noblechicken.me` to the Google OAuth client's Authorized JavaScript origins in Google Cloud Console.
+**One manual step remaining:** add `https://trak-plus.lucifer07o.tech` to the Google OAuth client's Authorized JavaScript origins in Google Cloud Console.
 
 ---
 
@@ -320,7 +320,7 @@ The E2E job failed on run #4 with the same exit code 4 as run #3. `docker compos
 
 ## 2026-08-31 — Phase 5 (CI iteration 1): First real CI run — 3 failures found & fixed
 
-The repo was pushed to GitHub (`NobleChicken97/trakPlus`) and CI ran for real. Three genuine failures surfaced:
+The repo was pushed to GitHub (`Nitingupta0/Trak_Plus`) and CI ran for real. Three genuine failures surfaced:
 
 1. **vitest `test-results.json` not written** — `--outputFile` only works when a JSON reporter is active; `--reporter=default` alone silently skips it. **Fix:** added `--reporter=json` alongside `--reporter=default` (verified locally: file written, count 12).
 2. **gitleaks flagged `JWT_SECRET_KEY=ci-smoke-key-...`** in the backend smoke-test step as `generic-api-key`. **Fix:** removed the env var entirely — the smoke test only checks `/health` (liveness, no auth), verified still 200 locally.

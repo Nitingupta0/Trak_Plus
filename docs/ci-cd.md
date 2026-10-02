@@ -90,7 +90,7 @@ Go to **Settings → Secrets and variables → Actions → New repository secret
           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
         },
         "StringLike": {
-          "token.actions.githubusercontent.com:sub": "repo:NobleChicken97/trakPlus:*"
+          "token.actions.githubusercontent.com:sub": "repo:Nitingupta0/Trak_Plus:*"
         }
       }
     }
