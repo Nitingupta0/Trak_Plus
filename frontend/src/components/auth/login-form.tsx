@@ -99,7 +99,7 @@ export function LoginForm() {
         value={email}
         onChange={(event) => setEmail(event.target.value)}
         placeholder="Email address"
-        className="w-full px-4 py-3 bg-[oklch(0.92_0.014_86)] border border-border text-foreground placeholder:text-muted-foreground/70 outline-none focus:border-[--status-active]/60 transition-colors"
+        className="w-full px-4 py-3 bg-[oklch(0.92_0.014_86)] border border-border text-[oklch(0.180_0.010_80.6)] placeholder:text-muted-foreground/70 outline-none focus:border-[--status-active]/60 transition-colors"
       />
 
       {/* Password */}
@@ -109,7 +109,7 @@ export function LoginForm() {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           placeholder="Password"
-          className="w-full px-4 py-3 pr-12 bg-[oklch(0.92_0.014_86)] border border-border text-foreground placeholder:text-muted-foreground/70 outline-none focus:border-[--status-active]/60 transition-colors"
+          className="w-full px-4 py-3 pr-12 bg-[oklch(0.92_0.014_86)] border border-border text-[oklch(0.180_0.010_80.6)] placeholder:text-muted-foreground/70 outline-none focus:border-[--status-active]/60 transition-colors"
         />
         <button
           type="button"
