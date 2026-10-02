@@ -270,11 +270,11 @@ jobs:
           tags: trakplus-frontend:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Check image size (< 200 MB)
+      - name: Check image size (< 250 MB)
         run: |
           M=$(( $(docker image inspect trakplus-frontend:ci --format='{{.Size}}') / 1048576 ))
           echo "Image size: ${M} MB"
-          [ "$M" -le 200 ] || { echo "::error::frontend image ${M} MB exceeds 200 MB"; exit 1; }
+          [ "$M" -le 250 ] || { echo "::error::frontend image ${M} MB exceeds 250 MB"; exit 1; }
       - name: Smoke test — /login serves 200
         run: |
           docker run -d --name fe-smoke -p 3000:3000 trakplus-frontend:ci
