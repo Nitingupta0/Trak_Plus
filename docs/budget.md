@@ -95,4 +95,6 @@ Everything else from Budget B is unchanged: same Docker Compose stack, Postgres 
 
 **Status (2026-09-01):** Lightsail Small `trakplus` is provisioned and LIVE at **https://trakplus.noblechicken.me** (Caddy TLS via Let's Encrypt). Google sign-in + search verified. Monthly cost ~$12, covered by the AWS credit.
 
+**Update (2026-10-02):** the app is now also deployed to an **Azure VM** (`Standard_B2s`, static IP) at **https://trak-plus.lucifer07o.tech**, started before demos and deallocated afterwards (idle cost ≈ disk + static IP). See [`azure-deployment.md`](azure-deployment.md). The Lightsail figures above describe the original AWS plan.
+
 **Next:** (a) wire `deploy/backup.sh` to run nightly on the box (pg_dump → S3); (b) confirm the AWS Budgets alarm is active for the Lightsail account; (c) review the first full month bill against this plan.

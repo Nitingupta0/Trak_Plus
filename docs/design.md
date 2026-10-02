@@ -85,5 +85,5 @@ critical path, no free-tier limits.
 - Alertmanager: alert on error-rate spike, pod crash loops, Redis/Postgres connection failures.
 
 ## 10. Cost control
-- **Live deployment:** a single **Lightsail Small** (~$12/mo flat) runs the whole app + Postgres + Redis in Docker — see [`docs/budget.md`](budget.md). No EKS/RDS/ElastiCache charges in the always-on path.
+- **Live deployment:** a single VM runs the whole app + Postgres + Redis in Docker behind Caddy. Currently an **Azure VM** (`Standard_B2s`, deallocated between demos — see [`docs/azure-deployment.md`](azure-deployment.md)); the original target was a **Lightsail Small** (~$12/mo flat — see [`docs/budget.md`](budget.md)). No EKS/RDS/ElastiCache charges in the always-on path.
 - **Portfolio/EKS path (Phases 6–8):** if re-applied for a demo, use a small SPOT node group, RDS `db.t4g.micro`, ElastiCache `cache.t4g.micro`, and `terraform destroy` when the demo is over (~$0/mo idle). AWS Budgets alarm guards both.

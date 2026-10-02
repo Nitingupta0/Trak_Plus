@@ -183,6 +183,8 @@ Conventions used throughout:
   - Passing criteria: instance running, app reachable at http://IP (or domain), full Phase 3 E2E flow works against it. ✅ **LIVE** — Lightsail Small `trakplus` (13.234.124.180) → https://trakplus.noblechicken.me; Caddy TLS (Let's Encrypt); search/auth verified via headless browser.
 - [x] 🧪 **Backup smoke test**: `deploy/backup.sh` writes a `pg_dump` to S3 and restores it into a throwaway DB.
   - Passing criteria: round-trip backup → restore yields identical row counts. ✅ 2026-09-02 — scoped IAM user `trakplus-backups` (S3 put/list on `trakplus-backups` only) + bucket created; aws CLI v2 installed + scoped creds configured on the box; nightly cron `30 2 * * *` wired (`PATH` set,, log `/var/log/trakplus-backup.log`). Round-trip verified: restore into throwaway DB → exact `count(*)` identical across all 7 tables (titles 372, episodes 237, users 3, library_entries 6).
+- [x] **Azure VM deployment** (alternative single-box target, same compose stack)
+  - Passing criteria: site reachable over HTTPS on a custom domain, register/login/search/add-to-library work, only Caddy's 80/443 published, survives a VM deallocate/start cycle. ✅ 2026-10-02 — https://trak-plus.lucifer07o.tech; verified incl. restart test. Runbook: `docs/azure-deployment.md`. Fixes folded into `deploy/`: domain/CORS now env-driven, `JWT_SECRET_KEY` required, `!reset` for host ports.
 - 📝 **progress.md checkpoint**: cost snapshot (first full month bill), actual vs planned spend, anything surprising about Lightsail. ⚠ Pending first full month; infra + HTTPS + fixes logged in progress.md.
 
 ---

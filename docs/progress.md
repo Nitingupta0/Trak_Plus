@@ -14,6 +14,18 @@ Each entry format:
 
 ---
 
+## 2026-10-02 — Phase 9: Azure VM deployment (live) + deploy config hardening
+
+**Done:** Deployed the compose stack to an Azure Ubuntu VM (`Standard_B2s`, static IP, 2 GB swap) behind Caddy at **https://trak-plus.lucifer07o.tech** (Let's Encrypt cert issued, `/health` reports `production`). Documented the full runbook in `docs/azure-deployment.md`. Hardened `deploy/docker-compose.lightsail.yml`: site domain/CORS now come from `deploy/.env.lightsail` (no hardcoded domain; Caddy healthcheck derives the host from `CADDY_SITE_ADDRESS`), `JWT_SECRET_KEY` is passed to the backend and **required** (the backend default is a public dev value), and `ports: !reset []` so base-file host ports really are removed.
+
+**Tests:** `docker compose config` renders correctly with the override and fails fast when `JWT_SECRET_KEY` is missing; on the VM all 5 containers healthy, only 80/443 published, register/login/search (TMDB, RAWG, anime/manga) and add-to-library verified in the browser; site survived a deallocate → start cycle with data and TLS intact.
+
+**Issues/deviations:** The VM is deallocated between demos, so the site is up on demand only. SSH is open to any IP (strong password + fail2ban) because IP allow-listing broke on campus/ISP networks. Google sign-in left disabled on this deployment (email/password works). Older entries below still reference the original AWS Lightsail host (`trakplus.noblechicken.me`) as historical record.
+
+**Next:** Optional — enable Google sign-in for the new domain; nightly DB backup for the Azure VM.
+
+---
+
 ## 2026-09-03 — Phase 12: Login redesign, CI/CD auto-deploy, auto-save
 
 **Done:** (1) **Login redesign** — warm cream archive aesthetic with a generated hand-drawn media collage (`login-illustration.png`) showing movies/games/manga/anime/TV, a Create/Login mode toggle, amber accents, and hover-lift animation on every button. Google sign-in returned to the reliable `renderButton` iframe (custom-styled + warm-tinted) and the `/auth/google` backend was hardened to never leak a 500 (logger.exception captures the real cause, controlled 4xx/5xx). (2) **Auto-save** — status persists on click and rating persists on debounce/blur; the Save-changes button is gone; the rating field loads the saved value and `entryIdRef` is synced from the library so a rating always PATCHes the right entry. (3) **Streamlined CI/CD** — `push-images` runs on every push to `main` → ECR (SHA + latest tags); Lightsail `deploy/auto-deploy.sh` (cron every 5 min) polls ECR and redeploys automatically, no manual deploy. Verified end-to-end: Google sign-in works after correctly mapping the Google console origin + the hardened backend.

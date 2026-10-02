@@ -149,7 +149,13 @@ cd frontend && npm run test:e2e
 
 A single consolidated GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push/PR — lint, tests, build, Docker, Terraform validation, security scans (gitleaks, hadolint, npm/pip audits), and a full-stack Playwright E2E. One file = one action in the Actions UI.
 
+## Deploy to an Azure VM (current live site)
+
+**Live: [trak-plus.lucifer07o.tech](https://trak-plus.lucifer07o.tech)** — the same Docker Compose stack on one Ubuntu VM (`Standard_B2s`) behind Caddy with automatic HTTPS. The VM is started before demos and deallocated afterwards, so the site is only up on demand. Full runbook (VM, DNS, config, start/stop routine, gotchas): [`docs/azure-deployment.md`](docs/azure-deployment.md). It uses the same `deploy/docker-compose.lightsail.yml` + `deploy/.env.lightsail` as the Lightsail path below.
+
 ## Deploy to AWS Lightsail (~$12/mo, single box) — auto-deploy
+
+> Original always-on deployment target; the Azure VM above is what currently serves the live site.
 
 The **live, always-on** deployment runs the same Docker Compose stack on one **Lightsail Small** instance (2 vCPU / 2 GB / 60 GB SSD — $12/mo flat). No EKS, no RDS, no ElastiCache — Postgres and Redis run in Docker on the box. See [`docs/budget.md`](docs/budget.md) for the full cost plan.
 
@@ -179,7 +185,7 @@ The **EKS/Terraform** path (`infra/`, `k8s/`) remains intact as portfolio code �
 backend/    FastAPI app — app/{api,core,models,schemas,services}, Alembic migrations, tests/
 frontend/   Next.js 16 — src/app (pages + BFF routes), src/components, e2e/
 infra/      Terraform — modules/{network,eks,rds,elasticache,ecr,iam}, environments/{staging,prod}
-deploy/     Lightsail single-box deploy — Caddy, compose override (base/lightsail/ecr), provision/backup/teardown/auto-deploy scripts
+deploy/     Single-VM deploy (Lightsail / Azure VM) — Caddy, compose override (base/lightsail/ecr), provision/backup/teardown/auto-deploy scripts
 scripts/    Dev utilities (scripts/check_apis.py smoke-tests all 5 external APIs)
 docs/       Product spec, design, plan, todos, progress log, budget, ci-cd, examples/
 .planning/  GSD codebase map (STACK, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, INTEGRATIONS, CONCERNS)
@@ -200,10 +206,11 @@ Build plan and phase-by-phase passing criteria: [`docs/plan.md`](docs/plan.md) �
 - ✅ **Phase 6** — AWS Terraform (6 modules: network, RDS, Redis, ECR, IAM, EKS — code-complete, blocked on AWS)
 - ✅ **Phase 7** — CI/CD to EKS (ECR push + staging deploy + prod approval gate — code-complete, blocked on AWS)
 - ✅ **Phase 8** — Observability (Prometheus metrics, Grafana dashboards, Alertmanager rules, AWS Budgets alarm, k6 load test — code-complete, blocked on AWS)
-- ✅ **Phase 9** — Lightsail single-box deployment (~$12/mo, live at https://trakplus.noblechicken.me; nightly S3 backups wired + round-trip verified)
+- ✅ **Phase 9** — Lightsail single-box deployment (~$12/mo, originally live at https://trakplus.noblechicken.me; nightly S3 backups wired + round-trip verified)
 - ✅ **Phase 10** — UI Overhaul (Archive Aesthetic & Dynamic Motion)
 - ✅ **Phase 11** — Feature Enhancements (Schedule, Analysis, Playtime & Progress)
 - ✅ **Phase 12** — Login Redesign, CI/CD Auto-Deploy & Auto-Save
+- ✅ **Azure VM deployment** — live at https://trak-plus.lucifer07o.tech ([runbook](docs/azure-deployment.md))
 - ✅ **Graphify** — Knowledge graph installed globally (3 surfaces) + graph built (679 nodes)
 
 ## Notes
