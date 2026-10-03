@@ -2,7 +2,7 @@
 
 One self-hosted app to track everything you consume — **movies, TV, games, anime, and manga** — with rich metadata, episode/chapter-level progress tracking, and India-specific "where to stream" info.
 
-Built as a portfolio-grade full-stack + DevOps project: async FastAPI backend, Next.js 16 frontend, Redis-cached external APIs, and a Terraform-driven path to AWS EKS.
+Built as a portfolio-grade full-stack + DevOps project: async FastAPI backend, Next.js 16 frontend, Redis-cached external APIs, deployed with Docker Compose and Caddy on an Azure VM — plus Terraform/Kubernetes code for an optional AWS EKS path.
 
 ---
 
@@ -22,6 +22,27 @@ Built as a portfolio-grade full-stack + DevOps project: async FastAPI backend, N
 - 👤 **Private by default** — every library/progress query is scoped server-side by the authenticated user
 
 ## Architecture
+
+**Live deployment (Azure VM):**
+
+```text
+Browser ──HTTPS──► Caddy (ports 80/443, automatic Let's Encrypt)
+                     │
+                     ├─ pages, /api/bff/*, /api/auth/* ──► [Next.js 16 frontend :3000]
+                     │                                          │  BFF (httpOnly cookies)
+                     │                                          ▼
+                     └─ /api/*, /health ──────────────────► [FastAPI backend :8000] ──► [PostgreSQL 17]
+                                                                │                   ──► [Redis 7 cache]
+                                                                └──► [TMDB / RAWG / AniList / Jikan / MangaDex]
+
+All services run via Docker Compose on one Azure VM (Ubuntu 24.04, Standard_B2s).
+CI: GitHub Actions (lint, tests, build, security scans). Deploys to the VM are manual.
+```
+
+The VM is started before demos and deallocated afterwards — see [Deploy to an Azure VM](#deploy-to-an-azure-vm-live-site).
+
+<details>
+<summary>Optional: AWS EKS target (Terraform/Kubernetes portfolio code — not deployed)</summary>
 
 ```text
 [Next.js 16 frontend] ──BFF (httpOnly cookies)──► [FastAPI backend] ──► [PostgreSQL (RDS)]
@@ -43,7 +64,9 @@ Docker Compose (local) ──► Terraform (VPC + EKS + RDS + ElastiCache + ECR)
 CI/CD: GitHub Actions ──► push ECR ──► deploy staging (auto) ──► promote prod (approval gate)
 ```
 
-The diagram above is the **EKS target** (Terraform/Kubernetes portfolio code, not deployed). The **live deployment is simpler**: one Azure VM runs the Docker Compose stack (frontend, backend, Postgres, Redis) behind Caddy, which provides automatic HTTPS — see [Deploy to an Azure VM](#deploy-to-an-azure-vm-live-site).
+This is the AWS design the `infra/` and `k8s/` code targets. It is kept as portfolio code and is not deployed.
+
+</details>
 
 See [`docs/design.md`](docs/design.md) for the full architecture document.
 
@@ -190,7 +213,7 @@ cp deploy/.env.lightsail.example deploy/.env.lightsail   # fill in IP/domain + k
 
 Then browse to `http://<ip>` (or your domain — Caddy auto-provisions TLS). Tail logs with `docker compose logs -f`. Teardown: `deploy/teardown.sh`. Nightly DB backups: `deploy/backup.sh` (pg_dump → S3, cron at 02:30 UTC). See [`docs/ci-cd.md`](docs/ci-cd.md) for the full ECR→Lightsail pipeline setup.
 
-The **EKS/Terraform** path (`infra/`, `k8s/`) remains intact as portfolio code — re-applied on demand for demos, then `terraform destroy`-ed.
+The **EKS/Terraform** path (`infra/`, `k8s/`) is kept as portfolio code and is not deployed.
 
 ## Repo layout
 
@@ -216,9 +239,9 @@ Build plan and phase-by-phase passing criteria: [`docs/plan.md`](docs/plan.md) �
 - ✅ **Phase 3** — Frontend MVP (search, detail, library, progress, full E2E)
 - ✅ **Phase 4** — Import/export (Trakt-compatible CSV/JSON, round-trip verified)
 - ✅ **Phase 5** — Containerize + CI (Dockerfiles, single GitHub Actions workflow)
-- ✅ **Phase 6** — AWS Terraform (6 modules: network, RDS, Redis, ECR, IAM, EKS — code-complete, blocked on AWS)
-- ✅ **Phase 7** — CI/CD to EKS (ECR push + staging deploy + prod approval gate — code-complete, blocked on AWS)
-- ✅ **Phase 8** — Observability (Prometheus metrics, Grafana dashboards, Alertmanager rules, AWS Budgets alarm, k6 load test — code-complete, blocked on AWS)
+- ✅ **Phase 6** — AWS Terraform code (6 modules: network, RDS, Redis, ECR, IAM, EKS — code-complete and validated in CI, not deployed)
+- ✅ **Phase 7** — CI/CD to EKS code (ECR push + staging deploy + prod approval gate — code-complete, not deployed)
+- ✅ **Phase 8** — Observability (backend `/metrics` endpoint is live; Grafana dashboards, Alertmanager rules, AWS Budgets alarm and k6 load test are code-complete, not deployed)
 - ✅ **Phase 9** — Single-box deployment: AWS Lightsail scripts (~$12/mo option, incl. nightly S3 backup script) and a live Azure VM at https://trak-plus.lucifer07o.tech
 - ✅ **Phase 10** — UI Overhaul (Archive Aesthetic & Dynamic Motion)
 - ✅ **Phase 11** — Feature Enhancements (Schedule, Analysis, Playtime & Progress)
