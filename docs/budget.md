@@ -93,6 +93,6 @@ Everything else from Budget B is unchanged: same Docker Compose stack, Postgres 
 
 ## 8. Current status & next action
 
-**Status (2026-09-01):** Lightsail Small `trakplus` is provisioned and LIVE at **https://trakplus.noblechicken.me** (Caddy TLS via Let's Encrypt). Google sign-in + search verified. Monthly cost ~$12, covered by the AWS credit.
+**Status (2026-09-01):** Lightsail Small `trakplus` is provisioned and LIVE at **https://trakplus.lucifer07o.tech** (Caddy TLS via Let's Encrypt). Google sign-in + search verified. Monthly cost ~$12, covered by the AWS credit.
 
 **Next:** (a) wire `deploy/backup.sh` to run nightly on the box (pg_dump → S3); (b) confirm the AWS Budgets alarm is active for the Lightsail account; (c) review the first full month bill against this plan.

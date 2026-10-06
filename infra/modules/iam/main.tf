@@ -10,7 +10,7 @@ data "aws_iam_policy_document" "github_oidc_assume" {
     condition {
       test     = "StringEquals"
       variable = "${replace(var.oidc_provider_url, "https://", "")}:sub"
-      values   = ["repo:NobleChicken97/trakPlus:*"]
+      values   = ["repo:Nitingupta0/Trak_Plus:*"]
     }
   }
 }
