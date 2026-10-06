@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trakplus-frontend
+  namespace: trakplus
+  labels:
+    app: trakplus-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trakplus-frontend
+  template:
+    metadata:
+      labels:
+        app: trakplus-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: <ECR_FRONTEND_URL>:<IMAGE_TAG>
+          ports:
+            - containerPort: 3000
+          env:
+            - name: API_URL
+              value: http://trakplus-backend:8000
+          readinessProbe:
+            httpGet:
+              path: /login
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

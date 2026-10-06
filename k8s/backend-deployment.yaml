@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trakplus-backend
+  namespace: trakplus
+  labels:
+    app: trakplus-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trakplus-backend
+  template:
+    metadata:
+      labels:
+        app: trakplus-backend
+    spec:
+      containers:
+        - name: backend
+          image: <ECR_BACKEND_URL>:<IMAGE_TAG>
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: trakplus-backend-config
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trakplus-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: trakplus-secrets
+                  key: REDIS_URL
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: trakplus-secrets
+                  key: JWT_SECRET_KEY
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

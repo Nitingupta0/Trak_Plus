@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trakplus-backend-config
+  namespace: trakplus
+data:
+  ENVIRONMENT: "production"
+  DEBUG: "false"
+  # Frontend needs the public API URL (browser-side calls)
+  NEXT_PUBLIC_API_URL: "/api"

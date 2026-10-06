@@ -1,0 +1,92 @@
+name: trakplus
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: trakplus
+      POSTGRES_PASSWORD: trakplus
+      POSTGRES_DB: trakplus
+    ports:
+      # Host 5433: this machine already runs a native Postgres on 5432.
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trakplus -d trakplus"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    # Run migrations on startup — the compose Postgres volume is fresh on CI
+    # (docker compose down -v), and the app needs the schema before serving.
+    # (Deliberately NOT in the Dockerfile CMD: the CI image smoke test runs
+    # without a DB and /health must still respond.)
+    command: >
+      sh -c "alembic upgrade head &&
+             exec uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    environment:
+      ENVIRONMENT: local
+      DEBUG: "false"
+      DATABASE_URL: postgresql+asyncpg://trakplus:trakplus@postgres:5432/trakplus
+      REDIS_URL: redis://redis:6379/0
+      TMDB_API_KEY: ${TMDB_API_KEY:-}
+      RAWG_API_KEY: ${RAWG_API_KEY:-}
+      CORS_ORIGINS: '${CORS_ORIGINS:-["http://localhost:3000", "http://localhost:3001"]}'
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      # Local Docker may use a host TLS-inspecting proxy; override to true when
+      # running without that proxy. Production explicitly enables verification.
+      EXTERNAL_API_VERIFY_SSL: ${EXTERNAL_API_VERIFY_SSL:-false}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    restart: unless-stopped
+    environment:
+      # Browser-side calls go to the host-published backend port…
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      # …while the BFF route handlers run inside this container and must use
+      # the compose network alias (localhost here would hit the container itself).
+      API_URL: http://backend:8000
+      # Google OAuth: pass through so the frontend shows the Google button
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
+      
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_started
+
+volumes:
+  postgres_data:
