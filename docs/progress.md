@@ -14,6 +14,13 @@ Each entry format:
 
 ---
 
+
+## 2026-10-06 — Docs: ownership and domain references updated
+**Done:** Replaced all previous-owner repo/account references (docs, `infra/modules/iam/main.tf` OIDC trust, graphify output) with `Nitingupta0/Trak_Plus`; site URL changed to `trakplus.lucifer07o.tech` (docs + `deploy/docker-compose.lightsail.yml` health check and CORS).
+**Tests:** none (text-only); grep confirms no old-owner references left.
+**Issues/deviations:** DNS, Caddy `CADDY_SITE_ADDRESS` and the Google OAuth authorized origin must be updated for the new domain before it works live.
+**Next:** point DNS for the new domain at the Lightsail box and redeploy.
+
 ## 2026-09-03 — Phase 12: Login redesign, CI/CD auto-deploy, auto-save
 
 **Done:** (1) **Login redesign** — warm cream archive aesthetic with a generated hand-drawn media collage (`login-illustration.png`) showing movies/games/manga/anime/TV, a Create/Login mode toggle, amber accents, and hover-lift animation on every button. Google sign-in returned to the reliable `renderButton` iframe (custom-styled + warm-tinted) and the `/auth/google` backend was hardened to never leak a 500 (logger.exception captures the real cause, controlled 4xx/5xx). (2) **Auto-save** — status persists on click and rating persists on debounce/blur; the Save-changes button is gone; the rating field loads the saved value and `entryIdRef` is synced from the library so a rating always PATCHes the right entry. (3) **Streamlined CI/CD** — `push-images` runs on every push to `main` → ECR (SHA + latest tags); Lightsail `deploy/auto-deploy.sh` (cron every 5 min) polls ECR and redeploys automatically, no manual deploy. Verified end-to-end: Google sign-in works after correctly mapping the Google console origin + the hardened backend.
@@ -52,7 +59,7 @@ Each entry format:
 
 ## 2026-09-03 — Deploy UI Enhancements to Lightsail (live)
 
-**Done:** Redeployed the stack to the Lightsail box (`deploy/deploy.sh`, HEAD `0fb112f`) — frontend/backend images rebuilt, Alembic migrations applied (episode descriptions/thumbnails, playtime/duration), all 5 containers healthy. Live site verified: `https://trakplus.noblechicken.me/health` → 200 ok, `/library` 200, `/` → `/login` 200.
+**Done:** Redeployed the stack to the Lightsail box (`deploy/deploy.sh`, HEAD `0fb112f`) — frontend/backend images rebuilt, Alembic migrations applied (episode descriptions/thumbnails, playtime/duration), all 5 containers healthy. Live site verified: `https://trakplus.lucifer07o.tech/health` → 200 ok, `/library` 200, `/` → `/login` 200.
 
 **Tests:** On-box `docker compose` healthchecks green; external curl of health + pages 200.
 
@@ -235,11 +242,11 @@ Each entry format:
 
 ---
 
-## 2026-09-01 — Custom domain + HTTPS live: trakplus.noblechicken.me
+## 2026-09-01 — Custom domain + HTTPS live: trakplus.lucifer07o.tech
 
-**Done:** DNS propagated (trakplus.noblechicken.me → 13.234.124.180). Caddy updated to use `CADDY_SITE_ADDRESS=https://trakplus.noblechicken.me` and CORS adjusted. Let's Encrypt cert issued successfully via TLS-ALPN challenge. Verified: HTTPS `/health` → `{"status":"ok"}` · search · frontend. HTTP → HTTPS auto-redirect working. Old IP (13.234.124.180) → 308 redirect to HTTPS domain.
+**Done:** DNS propagated (trakplus.lucifer07o.tech → 13.234.124.180). Caddy updated to use `CADDY_SITE_ADDRESS=https://trakplus.lucifer07o.tech` and CORS adjusted. Let's Encrypt cert issued successfully via TLS-ALPN challenge. Verified: HTTPS `/health` → `{"status":"ok"}` · search · frontend. HTTP → HTTPS auto-redirect working. Old IP (13.234.124.180) → 308 redirect to HTTPS domain.
 
-**One manual step remaining:** add `https://trakplus.noblechicken.me` to the Google OAuth client's Authorized JavaScript origins in Google Cloud Console.
+**One manual step remaining:** add `https://trakplus.lucifer07o.tech` to the Google OAuth client's Authorized JavaScript origins in Google Cloud Console.
 
 ---
 
@@ -320,7 +327,7 @@ The E2E job failed on run #4 with the same exit code 4 as run #3. `docker compos
 
 ## 2026-08-31 — Phase 5 (CI iteration 1): First real CI run — 3 failures found & fixed
 
-The repo was pushed to GitHub (`NobleChicken97/trakPlus`) and CI ran for real. Three genuine failures surfaced:
+The repo was pushed to GitHub (`Nitingupta0/Trak_Plus`) and CI ran for real. Three genuine failures surfaced:
 
 1. **vitest `test-results.json` not written** — `--outputFile` only works when a JSON reporter is active; `--reporter=default` alone silently skips it. **Fix:** added `--reporter=json` alongside `--reporter=default` (verified locally: file written, count 12).
 2. **gitleaks flagged `JWT_SECRET_KEY=ci-smoke-key-...`** in the backend smoke-test step as `generic-api-key`. **Fix:** removed the env var entirely — the smoke test only checks `/health` (liveness, no auth), verified still 200 locally.

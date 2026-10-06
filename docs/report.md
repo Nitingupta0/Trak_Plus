@@ -1,7 +1,7 @@
 # TrakPlus — Project Report
 
 > **Version:** 1.0 · **Date:** 2026-09-01
-> **Repo:** https://github.com/NobleChicken97/trakPlus
+> **Repo:** https://github.com/Nitingupta0/Trak_Plus
 > **Companion docs:** [`README.md`](../README.md) · [`docs/prod.md`](prod.md) · [`docs/design.md`](design.md) · [`docs/plan.md`](plan.md) · [`docs/todos.md`](todos.md) · [`docs/progress.md`](progress.md)
 
 ---
@@ -295,4 +295,4 @@ for the authoritative line items; the key ones:
 
 **Two budgets:** **Budget A — Original (EKS)** ≈ $185–205/mo per environment (kept as code, too expensive for always-on personal use). **Budget B — Revised (Lightsail)** ≈ $12–13.50/mo (the active budget, authoritative numbers in `budget.md`). Everything expensive in Budget A (EKS, NAT, RDS, ElastiCache, ALB ≈ $160–170/mo) was removed because the app's actual scale doesn't need it.
 
-**Current status (2026-09-01):** the app is **LIVE at https://trakplus.noblechicken.me** on a Lightsail Small (~$12/mo). EKS staging was `terraform destroy`-ed (~$190/mo saved). Google sign-in + search verified end-to-end. Remaining: nightly DB backup cron + first full-month cost review.
+**Current status (2026-09-01):** the app is **LIVE at https://trakplus.lucifer07o.tech** on a Lightsail Small (~$12/mo). EKS staging was `terraform destroy`-ed (~$190/mo saved). Google sign-in + search verified end-to-end. Remaining: nightly DB backup cron + first full-month cost review.

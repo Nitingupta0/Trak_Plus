@@ -11,7 +11,7 @@ Conventions used throughout:
 ## Phase 0 — Foundations
 
 - [x] **Scaffold monorepo** (`backend/`, `frontend/`, `infra/`, `.github/workflows/`, `docs/`)
-  - Passing criteria: repo pushed to GitHub, README stub present, `docs/prod.md`, `design.md`, `plan.md`, `todos.md` committed under `docs/`. ✅ 2026-09-01 — repo pushed to `NobleChicken97/trakPlus`, README present, all docs tracked under `docs/`.
+  - Passing criteria: repo pushed to GitHub, README stub present, `docs/prod.md`, `design.md`, `plan.md`, `todos.md` committed under `docs/`. ✅ 2026-09-01 — repo pushed to `Nitingupta0/Trak_Plus`, README present, all docs tracked under `docs/`.
 - [x] **Docker Compose for local dev** (Postgres, Redis, backend, frontend)
   - Passing criteria: `docker compose up` brings up all 4 services; backend health endpoint (`/health`) returns 200; frontend loads on localhost. ✅ Verified 2026-08-30: all 4 containers healthy; `/health` 200; `/health/ready` 200 (database + redis ok); frontend serves HTTP 200 on :3000. Deviation: compose runs production builds (Next standalone) instead of dev servers — see progress.md.
 - [x] **Register API keys** — TMDB, RAWG (AniList/Jikan/MangaDex need none)
@@ -180,7 +180,7 @@ Conventions used throughout:
 - [x] **CORS configurable**: `CORS_ORIGINS` overridable via env (was hardcoded localhost)
   - Passing criteria: base compose reads `${CORS_ORIGINS:-…}`; Lightsail override sets prod origin. ✅ Done.
 - [x] **Provision + deploy live**
-  - Passing criteria: instance running, app reachable at http://IP (or domain), full Phase 3 E2E flow works against it. ✅ **LIVE** — Lightsail Small `trakplus` (13.234.124.180) → https://trakplus.noblechicken.me; Caddy TLS (Let's Encrypt); search/auth verified via headless browser.
+  - Passing criteria: instance running, app reachable at http://IP (or domain), full Phase 3 E2E flow works against it. ✅ **LIVE** — Lightsail Small `trakplus` (13.234.124.180) → https://trakplus.lucifer07o.tech; Caddy TLS (Let's Encrypt); search/auth verified via headless browser.
 - [x] 🧪 **Backup smoke test**: `deploy/backup.sh` writes a `pg_dump` to S3 and restores it into a throwaway DB.
   - Passing criteria: round-trip backup → restore yields identical row counts. ✅ 2026-09-02 — scoped IAM user `trakplus-backups` (S3 put/list on `trakplus-backups` only) + bucket created; aws CLI v2 installed + scoped creds configured on the box; nightly cron `30 2 * * *` wired (`PATH` set,, log `/var/log/trakplus-backup.log`). Round-trip verified: restore into throwaway DB → exact `count(*)` identical across all 7 tables (titles 372, episodes 237, users 3, library_entries 6).
 - 📝 **progress.md checkpoint**: cost snapshot (first full month bill), actual vs planned spend, anything surprising about Lightsail. ⚠ Pending first full month; infra + HTTPS + fixes logged in progress.md.

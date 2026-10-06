@@ -79,5 +79,5 @@ media-tracker/
 If time-constrained, MVP = Phases 0-5 + the Lightsail single-box deployment (Phase 9). Phases 6-8's full EKS automation and observability can be the "v2" story in interviews — still very fine to build incrementally and talk about the roadmap.
 
 ## What I need from you to start Phase 0
-- Confirm repo name / whether you want it on your existing GitHub (NobleChicken97).
+- Confirm repo name / whether you want it on your existing GitHub (Nitingupta0).
 - TMDB + RAWG API keys once you've registered for them (I can walk you through registration).

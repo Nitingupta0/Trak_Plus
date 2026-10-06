@@ -200,7 +200,7 @@ Build plan and phase-by-phase passing criteria: [`docs/plan.md`](docs/plan.md) �
 - ✅ **Phase 6** — AWS Terraform (6 modules: network, RDS, Redis, ECR, IAM, EKS — code-complete, blocked on AWS)
 - ✅ **Phase 7** — CI/CD to EKS (ECR push + staging deploy + prod approval gate — code-complete, blocked on AWS)
 - ✅ **Phase 8** — Observability (Prometheus metrics, Grafana dashboards, Alertmanager rules, AWS Budgets alarm, k6 load test — code-complete, blocked on AWS)
-- ✅ **Phase 9** — Lightsail single-box deployment (~$12/mo, live at https://trakplus.noblechicken.me; nightly S3 backups wired + round-trip verified)
+- ✅ **Phase 9** — Lightsail single-box deployment (~$12/mo, live at https://trakplus.lucifer07o.tech; nightly S3 backups wired + round-trip verified)
 - ✅ **Phase 10** — UI Overhaul (Archive Aesthetic & Dynamic Motion)
 - ✅ **Phase 11** — Feature Enhancements (Schedule, Analysis, Playtime & Progress)
 - ✅ **Phase 12** — Login Redesign, CI/CD Auto-Deploy & Auto-Save

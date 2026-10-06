@@ -36,7 +36,7 @@ services:
     healthcheck:
       # Site is HTTPS-only; http://localhost/ never matches (caused false "unhealthy").
       # Hit the backend /health through Caddy over HTTPS using the real domain.
-      test: ["CMD", "wget", "-qO-", "--no-check-certificate", "https://trakplus.noblechicken.me/health"]
+      test: ["CMD", "wget", "-qO-", "--no-check-certificate", "https://trakplus.lucifer07o.tech/health"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -63,7 +63,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       TMDB_API_KEY: ${TMDB_API_KEY}
       RAWG_API_KEY: ${RAWG_API_KEY}
-      CORS_ORIGINS: '["https://trakplus.noblechicken.me"]'
+      CORS_ORIGINS: '["https://trakplus.lucifer07o.tech"]'
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       EXTERNAL_API_VERIFY_SSL: "true"
     ports: []

@@ -313,7 +313,7 @@ The BFF proxies all `/library` and `/progress` endpoints. The browser calls:
 ## 10. Routing & Response Flow (Caddy → frontend → backend)
 
 ```
-Browser → https://trakplus.noblechicken.me/
+Browser → https://trakplus.lucifer07o.tech/
   ↓
 Caddy reverse proxy
   ├── /api/bff/*     → frontend (Next.js route handlers)
